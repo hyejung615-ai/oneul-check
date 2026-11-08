@@ -194,6 +194,30 @@
   $('#det').addEventListener('click', (e) => { if (e.target.id === 'det') $('#det').close(); });
   $('#detToggle').addEventListener('click', () => { if (detId) toggle(detId); $('#det').close(); });
 
+  // ---------- quick add: clipboard / share link ----------
+  async function prefillClipboard() {
+    try {
+      const t = (await navigator.clipboard.readText() || '').trim();
+      const ta = $('#dlgForm textarea[name=text]');
+      if (t && t.length >= 4 && !ta.value) { ta.value = t; ta.select(); toast('복사해 둔 내용을 붙여 넣었어요'); }
+    } catch {}
+  }
+  function openAddWith(text, src) {
+    $('#dlgForm').reset();
+    const c = tab in CAT ? tab : 'school';
+    $('#dlgForm').querySelector('input[value="' + c + '"]').checked = true;
+    $('#dlgForm textarea[name=text]').value = text;
+    if (src) $('#dlgForm select[name=src]').value = src;
+    $('#dlg').showModal();
+  }
+  function handleHashAdd() {
+    const m = location.hash.match(/^#add=([^&]*)(?:&src=(\w+))?/);
+    if (!m) return;
+    let text = ''; try { text = decodeURIComponent(m[1].replace(/\+/g, ' ')); } catch { text = m[1]; }
+    history.replaceState(null, '', location.pathname + location.search);
+    if (text.trim()) openAddWith(text.trim(), m[2]);
+  }
+
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 2000); }
 
   // ---------- load ----------
@@ -215,6 +239,7 @@
       localStorage.setItem(LS.pass, pass);
       $('#lock').classList.add('hidden');
       $('#app').classList.remove('hidden');
+      handleHashAdd();
     } catch (e) { $('#lockErr').textContent = '패스코드가 맞지 않아요'; }
   }
 
@@ -238,7 +263,7 @@
     if (p === 'granted') { toast('알림을 켰어요'); set(LS.notified, {}); checkAlerts(); }
     else toast('알림이 차단돼 있어요. 브라우저 설정에서 허용해 주세요');
   });
-  $('#fab').addEventListener('click', () => { $('#dlgForm').reset(); const c = tab in CAT ? tab : 'school'; $('#dlgForm').querySelector(`input[value="${c}"]`).checked = true; $('#dlg').showModal(); });
+  $('#fab').addEventListener('click', () => { $('#dlgForm').reset(); const c = tab in CAT ? tab : 'school'; $('#dlgForm').querySelector(`input[value="${c}"]`).checked = true; $('#dlg').showModal(); prefillClipboard(); });
   $('#dlg').addEventListener('close', () => {
     if ($('#dlg').returnValue !== 'save') return;
     const f = new FormData($('#dlgForm'));

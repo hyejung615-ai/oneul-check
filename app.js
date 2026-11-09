@@ -90,10 +90,11 @@
     const items = allItems().sort(sortItems);
     let html = '';
     if (tab === 'today') {
-      const near = items.filter((i) => { const d = diff(i.due); return d !== null && d <= 1 && !(d < 0 && isDone(i.id)); });
-      for (const k of Object.keys(CAT)) html += groupHTML(CAT[k], near.filter((i) => i.cat === k));
+      const near = items.filter((i) => { const d = diff(i.due); return d !== null && d <= 1; });
       const week = items.filter((i) => { const d = diff(i.due); return d !== null && d >= 2 && d <= 7; });
-      html += groupHTML('이번 주 다가오는 일', week);
+      for (const k of Object.keys(CAT)) html += groupHTML(CAT[k], near.filter((i) => i.cat === k && !isDone(i.id)));
+      html += groupHTML('이번 주 다가오는 일', week.filter((i) => !isDone(i.id)));
+      html += groupHTML('완료', [...near, ...week].filter((i) => isDone(i.id)), false);
       if (!html) html = '<div class="empty">오늘·내일 할 일이 없어요 🎉</div>';
     } else if (tab === 'sources') {
       html = `<div class="group"><h3><span>연결 상태</span><span>${esc(fmtAsOf())}</span></h3>` +

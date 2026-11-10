@@ -1,8 +1,8 @@
-const CACHE = 'oc-v4';
+const CACHE = 'oc-v5';
 const ASSETS = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting())); });
-self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
+self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith('oc-') && k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
 
 // 앱 파일: 네트워크 우선, 실패 시 캐시 (오프라인에서도 열림)
 self.addEventListener('fetch', (e) => {
